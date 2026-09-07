@@ -17,7 +17,7 @@ const state: ProjectState = {
   image: null, imageName: "", width: 48, height: 48, lockRatio: true,
   cropMode: "cover", palette: "hama", maxColors: null, fitMode: "practical",
   previewMode: "beads", labelMode: "symbol", beadShape: "round",
-  showGrid: true, showLabels: true, removeBackground: false, showGuides: true
+  showGrid: true, showLabels: true, removeBackground: true, showGuides: true
 };
 let pattern: PatternResult | null = null;
 let timer = 0;
