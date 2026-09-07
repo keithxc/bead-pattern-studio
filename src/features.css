@@ -1,0 +1,16 @@
+.color-limit span { display: flex; justify-content: space-between; align-items: center; }
+.color-limit input { width: 100%; accent-color: var(--green); margin: 10px 0 2px; }
+.unlimited-toggle { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.zoom-controls { display: flex; align-items: center; gap: 3px; margin-left: auto; margin-right: 12px; }
+.zoom-controls button { border: 1px solid var(--line); background: var(--soft); color: var(--ink); height: 30px; min-width: 30px; border-radius: 6px; padding: 0 7px; }
+.zoom-controls #zoomReset { min-width: 58px; font-size: 11px; }
+.stage { touch-action: none; cursor: grab; align-items: safe center; justify-content: safe center; }
+.stage.dragging { cursor: grabbing; }
+.stage canvas.pattern-canvas { max-width: none; max-height: none; flex: none; }
+.actions .compact { padding-inline: 9px; font-weight: 500; }
+
+@media (max-width: 850px) {
+  .workspace-bar { height: auto; min-height: 57px; flex-wrap: wrap; gap: 5px; padding: 7px 10px; }
+  .zoom-controls { order: 3; width: 100%; justify-content: center; margin: 0; }
+  .workspace-bar > span { max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
