@@ -2,7 +2,7 @@ import "./style.css";
 import { palettes, type PaletteId } from "./data/palettes";
 import { generatePattern } from "./core/pattern";
 import { rgbCss } from "./core/colorSpace";
-import { drawPattern, markerMap } from "./render/draw";
+import { drawPattern } from "./render/draw";
 import { exportChartPng, exportColorPng } from "./render/exportPng";
 import { localeNames, t, type Locale } from "./i18n";
 import { APP_VERSION, REPOSITORY_URL } from "./version";
@@ -15,8 +15,8 @@ let locale: Locale = storedLocale && storedLocale in localeNames ? storedLocale 
 let theme = (localStorage.getItem("theme") as Theme | null) ?? "system";
 const state: ProjectState = {
   image: null, imageName: "", width: 48, height: 48, lockRatio: true,
-  cropMode: "cover", palette: "hama", maxColors: null, fitMode: "practical",
-  previewMode: "beads", labelMode: "symbol", beadShape: "round",
+  cropMode: "cover", palette: "mard", maxColors: null, fitMode: "practical",
+  previewMode: "pattern", labelMode: "code", beadShape: "round",
   showGrid: true, showLabels: true, removeBackground: true, showGuides: true
 };
 let pattern: PatternResult | null = null;
@@ -43,7 +43,7 @@ function template(): string {
     <aside class="panel controls">
       <section><h2>1 · ${tr("source")}</h2><label class="dropzone" id="dropzone"><input id="file" type="file" accept="image/jpeg,image/png,image/webp"><span class="upload-icon">＋</span><strong>${tr("drop")}</strong><small>${tr("formats")}</small></label><div id="filename" class="filename">${state.imageName || tr("noFile")}</div></section>
       <section><h2>2 · ${tr("gridCrop")}</h2><div class="preset-row">${[16,32,48,64,128,256].map(n=>`<button class="preset" data-size="${n}">${n}</button>`).join("")}</div><div class="field-row"><label>${tr("width")}<input id="width" type="number" min="8" max="2048" value="${state.width}"></label><button id="lock" class="icon-button ${state.lockRatio?"active":""}" title="${tr("lock")}">↔</button><label>${tr("height")}<input id="height" type="number" min="8" max="2048" value="${state.height}"></label></div><label>${tr("imageFit")}<select id="crop"><option value="cover">${tr("cover")}</option><option value="contain">${tr("contain")}</option><option value="stretch">${tr("stretch")}</option></select></label><label class="toggle"><input id="removeBg" type="checkbox" ${state.removeBackground?"checked":""}><span><b>${tr("removeBg")}</b><small>${tr("removeBgHint")}</small></span></label><div id="largeWarning" class="warning" hidden>${tr("tooLarge")}</div></section>
-      <section><h2>3 · ${tr("matching")}</h2><label>${tr("palette")}<select id="palette"><option value="hama">${tr("hama")}</option><option disabled>MARD · ${tr("sourceNeeded")}</option><option disabled>Artkal · ${tr("sourceNeeded")}</option><option disabled>Perler · ${tr("sourceNeeded")}</option></select></label><label>${tr("maxColors")}<select id="maxColors"><option value="">${tr("auto")}</option>${[8,12,16,24,32,48].map(n=>`<option value="${n}">${n}</option>`).join("")}<option value="0">${tr("unlimited")}</option></select></label><div class="segmented"><button data-fit="accurate" class="${state.fitMode==="accurate"?"active":""}">${tr("best")}</button><button data-fit="practical" class="${state.fitMode==="practical"?"active":""}">${tr("practical")}</button></div><small class="hint">${tr("practicalHint")}</small></section>
+      <section><h2>3 · ${tr("matching")}</h2><label>${tr("palette")}<select id="palette"><option value="mard">${tr("mard")}</option><option value="hama">${tr("hama")}</option><option disabled>Artkal · ${tr("sourceNeeded")}</option><option disabled>Perler · ${tr("sourceNeeded")}</option></select></label><label>${tr("maxColors")}<select id="maxColors"><option value="">${tr("auto")}</option>${[8,12,16,24,32,48].map(n=>`<option value="${n}">${n}</option>`).join("")}<option value="0">${tr("unlimited")}</option></select></label><div class="segmented"><button data-fit="accurate" class="${state.fitMode==="accurate"?"active":""}">${tr("best")}</button><button data-fit="practical" class="${state.fitMode==="practical"?"active":""}">${tr("practical")}</button></div><small class="hint">${tr("practicalHint")}</small></section>
       <section><h2>4 · ${tr("display")}</h2><div class="check-row"><label><input id="grid" type="checkbox" ${state.showGrid?"checked":""}> ${tr("grid")}</label><label><input id="labels" type="checkbox" ${state.showLabels?"checked":""}> ${tr("labels")}</label><label><input id="guides" type="checkbox" ${state.showGuides?"checked":""}> ${tr("guides")}</label></div><div class="field-row"><label>${tr("labels")}<select id="labelMode"><option value="symbol">${tr("shortSymbols")}</option><option value="code">${tr("codes")}</option></select></label><label>${tr("beads")}<select id="shape"><option value="round">${tr("round")}</option><option value="square">${tr("square")}</option></select></label></div></section>
     </aside>
     <section class="workspace panel"><div class="workspace-bar"><div class="tabs"><button data-view="original">${tr("original")}</button><button data-view="beads">${tr("preview")}</button><button data-view="pattern">${tr("chart")}</button></div><span id="status">${state.image?tr("processing"):tr("addImage")}</span></div><div id="stage" class="stage ${state.image?"has-image":""}"><div class="empty"><span>✦</span><strong>${tr("appear")}</strong><small>${tr("tryImage")}</small></div><img id="original" alt="${tr("original")}" src="${imageUrl}"><canvas id="canvas"></canvas></div><div class="summary"><div><small>${tr("grid").toUpperCase()}</small><strong id="gridStat">${state.width} × ${state.height}</strong></div><div><small>${tr("beads").toUpperCase()}</small><strong id="beadStat">—</strong></div><div><small>${tr("colors").toUpperCase()}</small><strong id="colorStat">—</strong></div><div class="actions"><button id="exportColor" disabled>${tr("exportPreview")}</button><button id="exportChart" class="primary" disabled>${tr("exportChart")}</button></div></div><div id="legend" class="legend"><div class="legend-empty">${tr("usageEmpty")}</div></div></section>
@@ -77,8 +77,7 @@ function paint(): void {
   q("#beadStat").textContent = beadCount.toLocaleString(locale);
   q("#colorStat").textContent = String(stats.length);
   q("#status").textContent = `${t(locale,"matched")} · ${stats.length} ${t(locale,"colors")}`;
-  const markers = markerMap(pattern);
-  q("#legend").innerHTML = stats.map(([index,count])=>{const color=pattern!.palette[index];return `<div class="legend-item"><span class="swatch" style="background:${rgbCss(color.rgb)}"></span><strong>${markers.get(index)}</strong><span><b>${color.brand} ${color.code}</b><small>${color.name??""}</small></span><em>${count}<small>${(count/Math.max(1,beadCount)*100).toFixed(1)}%</small></em></div>`}).join("");
+  q("#legend").innerHTML = stats.map(([index,count])=>{const color=pattern!.palette[index];return `<div class="legend-item"><span class="swatch" style="background:${rgbCss(color.rgb)}"></span><strong>${color.code}</strong><em>× ${count}</em></div>`}).join("");
   q("#exportColor").removeAttribute("disabled"); q("#exportChart").removeAttribute("disabled");
   document.querySelectorAll("[data-view]").forEach(el=>el.classList.toggle("active",(el as HTMLElement).dataset.view===state.previewMode));
 }

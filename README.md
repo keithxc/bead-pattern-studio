@@ -2,7 +2,7 @@
 
 A privacy-first static web tool that turns photos and illustrations into practical fuse bead patterns. Images are decoded, sampled and color-matched entirely in the browser; they are never uploaded.
 
-> **Status:** usable MVP. The built-in Hama palette uses community-measured RGB values. Always compare the chart with physical beads before buying or starting a large piece.
+> **Status:** usable MVP. MARD 221 shop-compatible color codes are the default. Screen RGB values are references; always compare with a physical color card before buying or starting a large piece.
 
 ## Features
 
@@ -12,7 +12,7 @@ A privacy-first static web tool that turns photos and illustrations into practic
 - Optional real-palette color limit (8–48 colors)
 - Accurate and practical matching modes; practical mode reduces isolated near-colors
 - Original, round-bead and labeled chart previews
-- Color code, quantity and percentage statistics
+- Compact color-swatch, shop color-code and quantity statistics
 - Resolution-independent color preview and construction-chart PNG exports
 - Simplified Chinese by default, plus English, Japanese, German, Korean and Traditional Chinese
 - Conservative corner-color background estimation with edge-connected removal
@@ -73,11 +73,12 @@ Core modules are separated under `src/core/`, so quantization and optimization c
 
 Palette modules live in `src/data/palettes/` and use the `BeadColor` interface in `src/types.ts`.
 
-The MVP enables one traceable dataset:
+The app enables two traceable datasets:
 
+- **MARD 221 (default):** A–H/M retail codes and screen-reference RGB values from the MIT-licensed [`HansBug/pindou-color-data`](https://github.com/HansBug/pindou-color-data), using its recommended `mard-221-alfonse-doudou` dataset.
 - **Hama (46 opaque colors):** community-measured values derived from the MIT-licensed [`cornelk/beadmachine`](https://github.com/cornelk/beadmachine). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-MARD, Artkal and Perler modules intentionally remain empty until reliable and redistributable data is documented. The UI does not present invented sample codes as purchasable colors.
+Artkal and Perler modules intentionally remain empty until reliable and redistributable data is documented. The UI does not present invented sample codes as purchasable colors.
 
 To add a brand, create or fill its palette module, record the exact source and license, export it from `src/data/palettes/index.ts`, and add an enabled select option in `src/main.ts`. Prefer measured physical samples under controlled lighting; manufacturer product photos are not color standards.
 
@@ -101,7 +102,7 @@ without file sharing fall back to a normal file download.
 ## Roadmap
 
 - Manual brush, eyedropper, fill, empty cell and undo/redo tools
-- Audited MARD, Artkal and Perler palettes plus per-color inventory toggles
+- Audited Artkal and Perler palettes plus per-color inventory toggles
 - Interactive crop position, background removal and empty cells
 - A4 multi-page PDF export with alignment marks
 - Project JSON import/export and local autosave
