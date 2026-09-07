@@ -14,3 +14,31 @@
   .zoom-controls { order: 3; width: 100%; justify-content: center; margin: 0; }
   .workspace-bar > span { max-width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+.editor-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(9, 15, 12, .82); padding: 18px; }
+.editor-shell { width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--soft); color: var(--ink); border-radius: 14px; overflow: hidden; }
+.editor-head { display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: white; border-bottom: 1px solid var(--line); }
+.editor-head > strong { white-space: nowrap; }
+[data-theme="dark"] .editor-head { background: #1b211e; }
+.editor-actions { margin-left: auto; display: flex; gap: 5px; flex-wrap: wrap; }
+.editor-actions button { border: 1px solid var(--line); border-radius: 7px; background: var(--soft); color: var(--ink); padding: 7px 9px; }
+.editor-actions button.active, .editor-actions .primary { background: var(--green); color: white; }
+.editor-body { min-height: 0; flex: 1; display: grid; grid-template-columns: 92px 1fr; }
+.editor-palette { padding: 8px; overflow: auto; display: flex; flex-direction: column; gap: 5px; border-right: 1px solid var(--line); }
+.editor-palette button { display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 6px; padding: 5px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--ink); }
+.editor-palette button.active { border-color: var(--green); background: rgba(39, 103, 73, .14); }
+.editor-palette i { width: 24px; height: 24px; border: 1px solid rgba(0,0,0,.2); border-radius: 5px; }
+.editor-palette b { font-size: 11px; }
+.editor-stage { min-width: 0; min-height: 0; overflow: auto; display: flex; align-items: safe center; justify-content: safe center; padding: 16px; background-color: #e7ebe7; touch-action: none; }
+.editor-stage canvas { flex: none; max-width: none; max-height: none; box-shadow: 0 8px 35px rgba(0,0,0,.18); cursor: crosshair; image-rendering: auto; }
+
+@media (max-width: 700px) {
+  .editor-overlay { padding: 0; }
+  .editor-shell { border-radius: 0; }
+  .editor-head { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .editor-actions { margin: 0; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .editor-actions button { white-space: nowrap; }
+  .editor-body { grid-template-columns: 1fr; grid-template-rows: 58px 1fr; }
+  .editor-palette { flex-direction: row; border-right: 0; border-bottom: 1px solid var(--line); }
+  .editor-palette button { min-width: 67px; }
+}

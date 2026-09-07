@@ -21,4 +21,17 @@ describe("detectOuterBlank", () => {
     const pixels: RGB[] = [[255,0,0],[0,0,0],[0,255,0],[0,0,0],[0,0,0],[0,0,255],[0,0,0],[255,255,0],[0,0,0]];
     expect([...detectOuterBlank(pixels, 3, 3)].every(value => value === 0)).toBe(true);
   });
+  it("ignores a small corner watermark while removing a shaded background", () => {
+    const bg: RGB=[249,214,116],ink:RGB=[36,17,10],mark:RGB=[255,255,255];
+    const pixels=Array.from({length:64},(_,i):RGB=>{
+      const x=i%8,y=Math.floor(i/8);
+      if(x>=3&&x<=4&&y>=2&&y<=5)return ink;
+      if(x===7&&y===7)return mark;
+      return y>=4?[249-(y-3)*7,214-(y-3)*10,116-(y-3)*7]:bg;
+    });
+    const mask=detectOuterBlank(pixels,8,8);
+    expect(mask[0]).toBe(1);
+    expect(mask[7*8+3]).toBe(1);
+    expect(mask[3*8+3]).toBe(0);
+  });
 });

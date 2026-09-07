@@ -14,6 +14,7 @@ A privacy-first static web tool that turns photos and illustrations into practic
 - Default 12-color limit with a 2–48 slider and an unlimited option
 - Original, round-bead and labeled chart previews
 - Zoom controls, wheel zoom and drag-to-pan inspection for construction charts
+- A dedicated fine-edit workspace with palette brush, eraser, pan, undo/redo and direct chart export
 - Compact color-swatch, shop color-code and quantity statistics
 - Construction-chart-first export controls with a secondary color-preview export
 - Simplified Chinese by default, plus English, Japanese, German, Korean and Traditional Chinese
@@ -105,7 +106,7 @@ without file sharing fall back to a normal file download.
 
 - Manual brush, eyedropper, fill, empty cell and undo/redo tools
 - Audited Artkal and Perler palettes plus per-color inventory toggles
-- Interactive crop position, background removal and empty cells
+- Interactive crop position and more advanced background controls
 - A4 multi-page PDF export with alignment marks
 - Project JSON import/export and local autosave
 
