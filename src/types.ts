@@ -12,19 +12,12 @@ export interface BeadColor {
 
 export interface PreparedColor extends BeadColor { lab: Lab }
 
-export interface BeadCell {
-  x: number;
-  y: number;
-  color: PreparedColor;
-  sourceLab: Lab;
-  matchDistance: number;
-  secondDistance: number;
-}
-
 export interface PatternResult {
   width: number;
   height: number;
-  cells: BeadCell[];
+  palette: PreparedColor[];
+  colorIndices: Uint8Array;
+  empty: Uint8Array;
 }
 
 export type CropMode = "cover" | "contain" | "stretch";
@@ -47,4 +40,6 @@ export interface ProjectState {
   beadShape: "round" | "square";
   showGrid: boolean;
   showLabels: boolean;
+  removeBackground: boolean;
+  showGuides: boolean;
 }

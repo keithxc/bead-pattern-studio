@@ -1,41 +1,8 @@
 import type { LabelMode, PatternResult } from "../types";
 import { drawPattern, markerMap } from "./draw";
 import { rgbCss } from "../core/colorSpace";
-
-function download(canvas: HTMLCanvasElement, filename: string): void {
-  canvas.toBlob(blob => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a"); link.href = url; link.download = filename; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }, "image/png");
-}
-
-export function exportColorPng(pattern: PatternResult): void {
-  const cellSize = Math.max(16, Math.ceil(1600 / Math.max(pattern.width, pattern.height)));
-  const canvas = document.createElement("canvas");
-  canvas.width = pattern.width * cellSize; canvas.height = pattern.height * cellSize;
-  drawPattern(canvas.getContext("2d")!, pattern, { cellSize, grid: false, labels: false, labelMode: "symbol", round: true });
-  download(canvas, `bead-pattern-${pattern.width}x${pattern.height}.png`);
-}
-
-export function exportChartPng(pattern: PatternResult, labelMode: LabelMode): void {
-  const cellSize = Math.max(22, Math.ceil(1800 / Math.max(pattern.width, pattern.height)));
-  const stats = [...pattern.cells.reduce((map, cell) => map.set(cell.color.code, (map.get(cell.color.code) ?? 0) + 1), new Map<string, number>())];
-  const legendHeight = 100 + Math.ceil(stats.length / 3) * 42;
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(pattern.width * cellSize, 1000); canvas.height = pattern.height * cellSize + legendHeight;
-  const ctx = canvas.getContext("2d")!; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawPattern(ctx, pattern, { cellSize, grid: true, labels: true, labelMode, round: false });
-  const markers = markerMap(pattern), colorByCode = new Map(pattern.cells.map(c => [c.color.code, c.color]));
-  ctx.fillStyle = "#17201b"; ctx.textAlign = "left"; ctx.font = "700 24px system-ui";
-  ctx.fillText(`Bead Pattern · ${pattern.width} × ${pattern.height} · ${pattern.cells.length} beads`, 18, pattern.height * cellSize + 38);
-  stats.forEach(([code, count], i) => {
-    const col = i % 3, row = Math.floor(i / 3), x = 18 + col * Math.floor(canvas.width / 3), y = pattern.height * cellSize + 76 + row * 42;
-    const color = colorByCode.get(code)!; ctx.fillStyle = rgbCss(color.rgb); ctx.fillRect(x, y - 19, 26, 26);
-    ctx.strokeStyle = "#9aa39e"; ctx.strokeRect(x, y - 19, 26, 26);
-    ctx.fillStyle = "#17201b"; ctx.font = "600 16px system-ui";
-    ctx.fillText(`${markers.get(code)} · ${color.brand} ${code} · ${color.name ?? ""} · ${count}`, x + 36, y);
-  });
-  download(canvas, `bead-chart-${pattern.width}x${pattern.height}.png`);
-}
+const canvasBlob=(canvas:HTMLCanvasElement)=>new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("PNG encoding failed")),"image/png"));
+async function save(canvas:HTMLCanvasElement,filename:string,title:string):Promise<string>{const blob=await canvasBlob(canvas),file=new File([blob],filename,{type:"image/png"});if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title});return"shared"}catch(error){if(error instanceof DOMException&&error.name==="AbortError")return"cancelled"}}const url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return"downloaded"}
+export async function exportColorPng(pattern:PatternResult,title="Bead pattern"):Promise<string>{const cellSize=Math.max(1,Math.min(32,Math.floor(8192/Math.max(pattern.width,pattern.height)))),canvas=document.createElement("canvas");canvas.width=pattern.width*cellSize;canvas.height=pattern.height*cellSize;drawPattern(canvas.getContext("2d")!,pattern,{cellSize,grid:false,labels:false,labelMode:"symbol",round:true,guides:false});return save(canvas,`bead-pattern-${pattern.width}x${pattern.height}.png`,title)}
+export async function exportChartPng(pattern:PatternResult,labelMode:LabelMode,title="Bead pattern",guides=true):Promise<string>{
+  const counts=new Uint32Array(pattern.palette.length);let beadCount=0;for(let i=0;i<pattern.colorIndices.length;i++)if(!pattern.empty[i]){counts[pattern.colorIndices[i]]++;beadCount++}const stats=[...counts.entries()].filter(([,count])=>count>0),legendHeight=100+Math.ceil(stats.length/3)*42,cellSize=Math.max(1,Math.min(32,Math.floor(Math.min(8192/pattern.width,(8192-legendHeight)/pattern.height)))),canvas=document.createElement("canvas");canvas.width=Math.max(pattern.width*cellSize,1000);canvas.height=pattern.height*cellSize+legendHeight;const ctx=canvas.getContext("2d")!;ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);drawPattern(ctx,pattern,{cellSize,grid:true,labels:true,labelMode,round:false,guides});const markers=markerMap(pattern);ctx.fillStyle="#17201b";ctx.textAlign="left";ctx.font="700 24px system-ui";ctx.fillText(`Bead Pattern · ${pattern.width} × ${pattern.height} · ${beadCount} beads`,18,pattern.height*cellSize+38);stats.forEach(([index,count],i)=>{const col=i%3,row=Math.floor(i/3),x=18+col*Math.floor(canvas.width/3),y=pattern.height*cellSize+76+row*42,color=pattern.palette[index];ctx.fillStyle=rgbCss(color.rgb);ctx.fillRect(x,y-19,26,26);ctx.strokeStyle="#9aa39e";ctx.strokeRect(x,y-19,26,26);ctx.fillStyle="#17201b";ctx.font="600 16px system-ui";ctx.fillText(`${markers.get(index)} · ${color.brand} ${color.code} · ${color.name??""} · ${count}`,x+36,y)});return save(canvas,`bead-chart-${pattern.width}x${pattern.height}.png`,title)}

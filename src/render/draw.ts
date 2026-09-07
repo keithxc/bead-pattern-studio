@@ -1,45 +1,10 @@
 import type { LabelMode, PatternResult } from "../types";
 import { relativeLuminance, rgbCss } from "../core/colorSpace";
-
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export function markerMap(pattern: PatternResult): Map<string, string> {
-  const colors = [...new Set(pattern.cells.map(cell => cell.color.code))];
-  return new Map(colors.map((code, i) => [code, i < 26 ? alphabet[i] : `${alphabet[Math.floor(i / 26) - 1]}${alphabet[i % 26]}`]));
-}
-
-export interface DrawOptions {
-  cellSize: number;
-  grid: boolean;
-  labels: boolean;
-  labelMode: LabelMode;
-  round: boolean;
-}
-
-export function drawPattern(ctx: CanvasRenderingContext2D, pattern: PatternResult, options: DrawOptions): void {
-  const { cellSize } = options;
-  const markers = markerMap(pattern);
-  ctx.clearRect(0, 0, pattern.width * cellSize, pattern.height * cellSize);
-  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, pattern.width * cellSize, pattern.height * cellSize);
-  for (const cell of pattern.cells) {
-    const x = cell.x * cellSize, y = cell.y * cellSize;
-    ctx.fillStyle = rgbCss(cell.color.rgb);
-    if (options.round) {
-      ctx.beginPath(); ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * .42, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.24)"; ctx.beginPath(); ctx.arc(x + cellSize * .38, y + cellSize * .35, cellSize * .1, 0, Math.PI * 2); ctx.fill();
-    } else ctx.fillRect(x, y, cellSize, cellSize);
-    if (options.labels && cellSize >= 12) {
-      const text = options.labelMode === "code" ? cell.color.code : markers.get(cell.color.code)!;
-      ctx.fillStyle = relativeLuminance(cell.color.rgb) < 135 ? "#fff" : "#17201b";
-      ctx.font = `600 ${Math.max(7, Math.min(cellSize * .36, 15))}px system-ui`;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(text, x + cellSize / 2, y + cellSize / 2, cellSize - 2);
-    }
-  }
-  if (options.grid) {
-    ctx.strokeStyle = "rgba(28,39,33,.25)"; ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 0; x <= pattern.width; x++) { ctx.moveTo(x * cellSize + .5, 0); ctx.lineTo(x * cellSize + .5, pattern.height * cellSize); }
-    for (let y = 0; y <= pattern.height; y++) { ctx.moveTo(0, y * cellSize + .5); ctx.lineTo(pattern.width * cellSize, y * cellSize + .5); }
-    ctx.stroke();
-  }
+const alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+export function markerMap(pattern:PatternResult):Map<number,string>{const used=[...new Set([...pattern.colorIndices].filter((_,i)=>!pattern.empty[i]))];return new Map(used.map((index,i)=>[index,i<26?alphabet[i]:`${alphabet[Math.floor(i/26)-1]}${alphabet[i%26]}`]))}
+export interface DrawOptions{cellSize:number;grid:boolean;labels:boolean;labelMode:LabelMode;round:boolean;guides?:boolean}
+export function drawPattern(ctx:CanvasRenderingContext2D,pattern:PatternResult,options:DrawOptions):void{
+  const{cellSize}=options,markers=markerMap(pattern);ctx.clearRect(0,0,pattern.width*cellSize,pattern.height*cellSize);ctx.fillStyle="#fff";ctx.fillRect(0,0,pattern.width*cellSize,pattern.height*cellSize);
+  for(let index=0;index<pattern.colorIndices.length;index++){if(pattern.empty[index])continue;const x=index%pattern.width*cellSize,y=Math.floor(index/pattern.width)*cellSize,color=pattern.palette[pattern.colorIndices[index]];ctx.fillStyle=rgbCss(color.rgb);if(options.round){ctx.beginPath();ctx.arc(x+cellSize/2,y+cellSize/2,cellSize*.42,0,Math.PI*2);ctx.fill();if(cellSize>=5){ctx.fillStyle="rgba(255,255,255,.24)";ctx.beginPath();ctx.arc(x+cellSize*.38,y+cellSize*.35,cellSize*.1,0,Math.PI*2);ctx.fill()}}else ctx.fillRect(x,y,cellSize,cellSize);if(options.labels&&cellSize>=12){const text=options.labelMode==="code"?color.code:markers.get(pattern.colorIndices[index])!;ctx.fillStyle=relativeLuminance(color.rgb)<135?"#fff":"#17201b";ctx.font=`600 ${Math.max(7,Math.min(cellSize*.36,15))}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(text,x+cellSize/2,y+cellSize/2,cellSize-2)}}
+  if(options.grid){ctx.strokeStyle="rgba(28,39,33,.25)";ctx.lineWidth=1;ctx.beginPath();for(let x=0;x<=pattern.width;x++){ctx.moveTo(x*cellSize+.5,0);ctx.lineTo(x*cellSize+.5,pattern.height*cellSize)}for(let y=0;y<=pattern.height;y++){ctx.moveTo(0,y*cellSize+.5);ctx.lineTo(pattern.width*cellSize,y*cellSize+.5)}ctx.stroke();if(options.guides){const line=(step:number,color:string,width:number)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();for(let x=step;x<pattern.width;x+=step){ctx.moveTo(x*cellSize,0);ctx.lineTo(x*cellSize,pattern.height*cellSize)}for(let y=step;y<pattern.height;y+=step){ctx.moveTo(0,y*cellSize);ctx.lineTo(pattern.width*cellSize,y*cellSize)}ctx.stroke()};line(5,"rgba(42,91,68,.55)",Math.max(1,Math.min(2,cellSize*.09)));line(10,"rgba(20,82,54,.88)",Math.max(2,Math.min(4,cellSize*.16)))}}
 }

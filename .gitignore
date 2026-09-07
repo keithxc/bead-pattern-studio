@@ -1,5 +1,6 @@
 node_modules
 dist
 result
+test_photo/
 .DS_Store
 *.local
