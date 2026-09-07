@@ -15,7 +15,7 @@ A privacy-first static web tool that turns photos and illustrations into practic
 - Color code, quantity and percentage statistics
 - Resolution-independent color preview and construction-chart PNG exports
 - Simplified Chinese by default, plus English, Japanese, German, Korean and Traditional Chinese
-- Conservative edge-connected white-background removal
+- Conservative corner-color background estimation with edge-connected removal
 - 5-cell guide lines and emphasized 10-cell construction guides
 - System-aware light/dark themes and mobile-first export controls
 - Grid dimensions up to 2048×2048 with compact typed-array storage and cached matching
@@ -94,7 +94,7 @@ without file sharing fall back to a normal file download.
 - Palette RGB is only an on-screen approximation and varies with bead batch, display and lighting.
 - Cropping is centered; there is no interactive crop position yet.
 - Practical optimization handles isolated cells, not general connected components.
-- Background removal is deliberately conservative and only removes neutral near-white pixels connected to the outer edge.
+- Background removal estimates a coherent color from the four corners, adapts to mild gradients and JPEG noise, and only removes matching pixels connected to the outer edge. It fails closed when the corners disagree.
 - Very large grids remain device-dependent and can take noticeable time on mobile hardware.
 - No manual editor, saved project format, inventory filter or PDF export yet.
 
