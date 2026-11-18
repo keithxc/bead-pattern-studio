@@ -113,3 +113,22 @@ without file sharing fall back to a normal file download.
 ## License
 
 Copyright © 2026 Keith Xu. Source code is available under the [MIT License](LICENSE). Product and brand names belong to their respective owners; this independent project is not endorsed by bead manufacturers.
+
+## Local build output
+
+The npm `dev`, `build`, `test` and `preview` scripts run through `tools/run.mjs` and the guarded `tools/run.py` when the shared resolver is present.
+It discovers the shared mygit resolver and supplies the physical checkout, run
+and native platform. On mm4 the resolver and verified external SSD are required
+before any output directory or compiler/Vite/Vitest process starts. Standalone CI/Nix checkouts keep the original Node-only commands, `dist/` artifact path and tool cache defaults; Python is required only with the shared mygit resolver. Other hosts retain their existing temporary/cache environment.
+
+`BEAD_BUILD_TASK` selects a run. `BEAD_VITE_OUT_DIR`, `BEAD_VITE_CACHE_DIR` and
+`BEAD_TEST_RESULTS_DIR` select explicit paths, validated before use and used
+unchanged. Output-affecting CLI flags are rejected in favor of these knobs.
+Vite's build/cache directories, Vitest reports/coverage, compiler caches, Python
+bytecode and process temporary files use those resolved locations. TypeScript
+runs with `--noEmit`. Builds do not clear an existing output directory.
+
+Direct `vite`, `vitest`, `tsc` and IDE/GUI commands bypass the wrapper. npm itself
+starts before its script; for an npm invocation whose own cache/logs must be
+external, first evaluate `python3 tools/build_paths.py --environment`, then run
+npm. The wrapper configures its child processes, not an already running parent.

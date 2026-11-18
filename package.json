@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
+    "dev": "node tools/run.mjs dev",
+    "build": "node tools/run.mjs build",
+    "preview": "node tools/run.mjs preview",
+    "test": "node tools/run.mjs test"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
